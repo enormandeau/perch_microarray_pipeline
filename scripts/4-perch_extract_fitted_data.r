@@ -1,21 +1,7 @@
-###########################################################################################################
-# Code adapted by Eric Normandeau from "Rcode_microarray_analysis_vIV.txt", originaly by Sebastien Renault
-#
-# What this code does:
-#
-# - Use gene expression data from a R-maanova analysis to:
-#
-#   - Prepare data for Heat-Map (remove unwanted effects)
-#
-#   Tested with R version 2.8.1 and maanova package version 1.13.3
-#
-# 2012 01 12
-###########################################################################################################
+# perch_microarray_pipeline
+# 4 extract fitted data
 
-
-###########################
 # Import needed objects
-
 load("OUTPUT_anova.RSession")
 
 # Define used object names here:
@@ -28,19 +14,10 @@ results = test.FDR
 # Import design file
 design = read.table(design.file, header = T)
 
-
-################################
-# Prepare data for Heat-Map
-
-
-# Import design file
-design = read.table(design.file, header = T)
-
 # Fitted data (yhat) for significant genes
 data.fitted = lowess.data$data
 
 # Remove array effect
-
 array.levels = levels(as.factor(design$Array))
 nb.arrays = length(array.levels)
 
@@ -51,7 +28,6 @@ for(i in 1:nb.arrays)
 
 
 # Remove dye effect
-
 dye.levels = levels(as.factor(design$Dye))
 nb.dyes = length(dye.levels)
 
