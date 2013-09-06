@@ -5,7 +5,7 @@
 input.file = "OUTPUT_1a_data.txt"
 output.file = "OUTPUT_1b_data.txt"
 spot.id.file = "spot_ids.txt"
-design.file = "design.txt"
+design.file = "files_to_fill/design.txt"
 
 # Importing libraries
 library(maanova)

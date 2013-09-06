@@ -6,7 +6,7 @@ input.file = "raw_data.txt"
 output.file = "OUTPUT_1a_data.txt"
 spot.id.file = "spot_ids.txt"
 header.file = "header.txt"
-filenames.file = "filenames.txt"
+filenames.file = "files_to_fill/filenames.txt"
 
 # Calculate number of slides
 filenames = read.table(filenames.file)

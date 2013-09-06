@@ -4,7 +4,7 @@
 ### Global variables
 input.file = "OUTPUT_1b_data.txt"
 output.file = "OUTPUT_1c_data.txt"
-design.file = "design.txt"
+design.file = "files_to_fill/design.txt"
 header.file = "header.txt"
 spot.id.file = "spot_ids.txt"
 

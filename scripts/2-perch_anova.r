@@ -7,15 +7,15 @@ library(maanova)
 
 # Global Variables
 input.data = "OUTPUT_1c_data.txt"
-design.file = "design.txt"
+design.file = "files_to_fill/design.txt"
 result.file = "OUTPUT_anova_results.txt"
 fold.change.file = "OUTPUT_anova_fold-changes.txt"
 r.session.file = "OUTPUT_anova.RSession"
 
 # Model (EDIT THIS PART)
 nb.perm = 1000
-my.model = ~Array + Famille + Sample + Dye
-my.random = ~Array + Sample
+my.model = ~Array + Famille + Dye
+my.random = ~Array
 term.tested = "Famille"
 
 
