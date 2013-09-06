@@ -1,2 +1,8 @@
-Fill this file
-(one filename per line, remove these 2 first lines)
+Pamar04_06.txt
+Pamar04_07.txt
+Pamar04_09.txt
+Pamar04_12.txt
+Pamar04_13.txt
+Pamar04_16.txt
+Pamar04_18.txt
+Pamar28_02.txt

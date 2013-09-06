@@ -1,1 +1,17 @@
-Fill this file
+Array	Famille	Aquarium	ind_num	Sample	Dye
+Pamar04_06	T	1	18	1	5
+Pamar04_06	Ni	1	6	2	3
+Pamar04_07	Ni	1	8	3	5
+Pamar04_07	T	1	18	4	3
+Pamar04_09	Ni	1	12	5	5
+Pamar04_09	T	1	7	6	3
+Pamar04_12	T	2	16	7	5
+Pamar04_12	Ni	2	10	8	3
+Pamar04_13	T	2	2	9	5
+Pamar04_13	Ni	2	16	10	3
+Pamar04_16	T	2	4	11	5
+Pamar04_16	Ni	2	15	12	3
+Pamar04_18	Ni	1	19	13	5
+Pamar04_18	T	1	15	14	3
+Pamar28_02	T	2	14	15	5
+Pamar28_02	Ni	2	2	16	3
