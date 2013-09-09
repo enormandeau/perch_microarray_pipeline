@@ -60,7 +60,7 @@ idx.mix.perm <- volcano(test.FDR, threshold=c(0.05,0.05), method=c("nominal","no
     title="Permutated Values", highlight.flag=F, onScreen=F)
 
 # FDR adjusted permutation pvalues
-idx.mix.fdr <- volcano(test.FDR, threshold=c(0.05,0.05), method=c("fdrperm", "fdrperm"),
+idx.mix.fdr <- volcano(test.FDR, threshold=c(0.1,0.1), method=c("fdrperm", "fdrperm"),
     title="FDR corrected Permutated Values", highlight.flag=F, onScreen=F)
 
 # List of significant genes according to :

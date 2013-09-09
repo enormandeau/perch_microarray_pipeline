@@ -5,10 +5,10 @@
 load("OUTPUT_anova.RSession")
 
 # Define used object names here:
-design.file = "design.txt"
+design.file = "files_to_fill/design.txt"
 lowess.data = lowess.data
 anova.model = anova.mix1
-output.file = "OUTPUT_fitted_data_scaled.txt"
+output.file = "OUTPUT_fitted_data.txt"
 results = test.FDR
 
 # Import design file
