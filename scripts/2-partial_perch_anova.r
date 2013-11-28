@@ -7,15 +7,7 @@ library(maanova)
 # Global Variables
 input.data = "OUTPUT_1c_data.txt"
 design.file = "design.txt"
-result.file = "OUTPUT_lakes_spring_2011_results.txt"
-fold.change.file = "OUTPUT_anova_lakes_spring_2011_fold-changes.txt"
-r.session.file = "OUTPUT_anova_lakes_spring_2011.RSession"
-
-# Model (EDIT THIS PART)
-nb.perm = 2
-my.model = ~Array + Dye + Region
-my.random = ~Array
-term.tested = "Region"
+result.file = "OUTPUT_lowess_data.txt"
 
 # Importing the data (in tab delimited file)
 data = read.madata(input.data,
@@ -25,7 +17,5 @@ data = read.madata(input.data,
 lowess.data = transform.madata (data, method="rlowess", f=0.5, degree=2,
     iter=3, draw="off")
 
-print(dim(lowess.data$data))
-
-write.table(lowess.data$data, "OUTPUT_lowess_data.txt", sep="\t", col.names=F, row.names=F)
+write.table(lowess.data$data, result.file, sep="\t", col.names=F, row.names=F)
 
