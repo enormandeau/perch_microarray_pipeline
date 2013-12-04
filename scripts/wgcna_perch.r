@@ -38,7 +38,7 @@ gsg$allOK
 #}
 
 # Plot the sample tree: Open a graphic output window of size 12 by 9 inches
-jpeg("sample_clustering_and_outliers.jpg", width=800, height=600, quality=100)
+jpeg("sample_clustering_and_outliers.jpg", width=1200, height=1000, quality=100)
     ## Cluster samples to detect outliers
     sampleTree = flashClust(dist(data.expression.temp), method = "average")
     par(cex = 0.6)
@@ -47,7 +47,7 @@ jpeg("sample_clustering_and_outliers.jpg", width=800, height=600, quality=100)
 
     # Choose height threshold to remove potential outliers
     # Plot a line to show the cut
-    cut.threshold = 10
+    cut.threshold = 25
     abline(h = cut.threshold, col = "red")
 dev.off()
 
@@ -67,9 +67,7 @@ nSamples
 traitData = read.csv(design.file, sep="\t")
 
 # WARNING: Change this for your project
-traitData = traitData[,c("Ind_name", "Ni", "Cd")]
-
-kept_samples = traitData$LakeSample[keepSamples]
+traitData = traitData[,c("Fish_ID", "Temperature", "Ni", "Cd")]
 
 # Eliminate data from removed samples
 allTraits = traitData[keepSamples, ]
@@ -81,7 +79,7 @@ perchSamples = rownames(datExpr)
 traitRows = match(perchSamples, allTraits$Ind_name)
 datTraits = allTraits
 rownames(datTraits) = allTraits$Ind_name
-datTraits = datTraits[, c("Ni", "Cd")]
+datTraits = datTraits[, c("Temperature", "Ni", "Cd")]
 collectGarbage()
 
 ## Visualize how traits to the sample dendogram
@@ -144,11 +142,11 @@ text(sft$fitIndices[,1], sft$fitIndices[,5], labels=powers, cex=cex1,col="red")
 
 
 # CAUTION Be sure to explore the parameters of blockwiseModules! There are more!
-power = 5
+power = 7
 minSize = 15
-reasignThreshold = 0.1
+reasignThreshold = 0.2
 deepSplit = 2
-mergeHeight= 0.30
+mergeHeight= 0.10
 net = blockwiseModules(datExpr, power = power, minModuleSize = minSize, reassignThreshold = reasignThreshold, deepSplit=deepSplit, mergeCutHeight = mergeHeight, numericLabels = TRUE, pamRespectsDendro = FALSE, saveTOMs = TRUE, saveTOMFileBase = tom.basename, verbose = 2)
 
 ## Plot the result
@@ -222,8 +220,8 @@ cat("  Number of significant modules", num_sign_modules, "\n")
 pvalues = data.frame(moduleTraitPvalue)
 genes = data.frame(1:1008)
 
-for (trait in c("Ni", "Cd")){
-    sign_modules = row.names(pvalues)[pvalues[,trait] <= 0.06]
+for (trait in c("Temperature", "Ni", "Cd")){
+    sign_modules = row.names(pvalues)[pvalues[,trait] <= 0.05]
     for (m in sign_modules){
         module = gsub("ME", "", m)
         cat(module, " module for trait ", trait, "\n", sep="")
@@ -249,7 +247,7 @@ for (trait in c("Ni", "Cd")){
         genes = data.frame(genes, MG)
         jpeg(paste(trait, "_", module, "gene_significance.jpg", sep=""), width=800, height=800, quality=100)
         par(mfrow = c(1,1))
-        verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]), abs(geneTraitSignificance[moduleGenes, 1]), xlab = paste("Module Membership in", module, "module"), ylab = "Gene significance for Metal trait", main = paste("Module membership vs. gene significance\n"), pch=21, cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2, col = "black", bg=module)
+        verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]), abs(geneTraitSignificance[moduleGenes, 1]), xlab = paste("Module Membership in", module, "module"), ylab = paste("Gene significance for ", trait, sep=""), main = paste("Module membership vs. gene significance\n"), pch=21, cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2, col = "black", bg=module)
         dev.off()
         
         MM = data.frame(abs(geneModuleMembership[, column]))
@@ -300,10 +298,6 @@ ModuleSignificance = tapply(gs_Ni, mergedColors, mean, na.rm=T)
 jpeg("Ni_module_significance.jpg", width=800, height=800)
 plotModuleSignificance(gs_Ni,mergedColors,ylim=c(0,0.8), main = "Gene significance accross module (bl)", las=3)
 dev.off()
-
-
-
-
 
 
 
