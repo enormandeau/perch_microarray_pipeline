@@ -288,9 +288,21 @@ write.table(genes, "OUTPUT_gene_significance.csv", row.names=F, quote=F, sep="\t
 
 
 
+gs_Temperature = as.numeric(cor(allTraits[,2], datExpr, use="p"))
+gs_Temperature = abs(gs_Temperature)
+# Next module significance is defined as average gene significance with kruskal-wallis test.
+ModuleSignificance = tapply(gs_Temperature, mergedColors, mean, na.rm=T)
+#cairo_pdf(filename = "(14)gene_significance_bl.pdf")
+jpeg("Temperature_module_significance.jpg", width=800, height=800)
+plotModuleSignificance(gs_Temperature,mergedColors,ylim=c(0,0.8), main = "Gene significance accross module (bl)", las=3)
+dev.off()
 
 
-gs_Ni = as.numeric(cor(allTraits[,2], datExpr, use="p"))
+
+
+
+
+gs_Ni = as.numeric(cor(allTraits[,3], datExpr, use="p"))
 gs_Ni = abs(gs_Ni)
 # Next module significance is defined as average gene significance with kruskal-wallis test.
 ModuleSignificance = tapply(gs_Ni, mergedColors, mean, na.rm=T)
@@ -302,7 +314,7 @@ dev.off()
 
 
 
-gs_Cd = as.numeric(cor(allTraits[,3], datExpr, use="p"))
+gs_Cd = as.numeric(cor(allTraits[,4], datExpr, use="p"))
 gs_Cd = abs(gs_Cd)
 # Next module significance is defined as average gene significance with kruskal-wallis test.
 ModuleSignificance = tapply(gs_Cd, mergedColors, mean, na.rm=T)
@@ -322,12 +334,14 @@ GeneConnectivity = GeneConnectivity/max(GeneConnectivity)
 #sort(GeneConnectivity)
 
 # Calculate gene significance for phenotype
-Ni_sign = standardScreeningNumericTrait(datExpr, datTraits[,1], alternative = "two.sided")
-Cd_sign = standardScreeningNumericTrait(datExpr, datTraits[,2], alternative = "two.sided")
+Temperature_sign = standardScreeningNumericTrait(datExpr, datTraits[,1], alternative = "two.sided")
+Ni_sign = standardScreeningNumericTrait(datExpr, datTraits[,2], alternative = "two.sided")
+Cd_sign = standardScreeningNumericTrait(datExpr, datTraits[,3], alternative = "two.sided")
 
 
-gene_choice = data.frame(GeneConnectivity, Ni_sign$pvalueStudent, Cd_sign$pvalueStudent)
+gene_choice = data.frame(GeneConnectivity, Temperature_sign$pvalueStudent, Ni_sign$pvalueStudent, Cd_sign$pvalueStudent)
 
+plot(gene_choice$GeneConnectivity, gene_choice$Temperature_sign.pvalueStudent)
 plot(gene_choice$GeneConnectivity, gene_choice$Ni_sign.pvalueStudent)
 plot(gene_choice$GeneConnectivity, gene_choice$Cd_sign.pvalueStudent)
 
@@ -335,41 +349,41 @@ plot(gene_choice$GeneConnectivity, gene_choice$Cd_sign.pvalueStudent)
 
 
 
-## Gene-trait association
-# Define variable weight containing the weight column of datTrait
-# traits_modules = list(c("Ni", "lightcyan"), c("Cd", "red"), c("Cd", "green"), c("Cd", "pink"))
-trait = "Ni"
-module = "lightcyan"
-weight = as.data.frame(datTraits[,trait])
-names(weight) = trait
+### Gene-trait association
+## Define variable weight containing the weight column of datTrait
+## traits_modules = list(c("Ni", "lightcyan"), c("Cd", "red"), c("Cd", "green"), c("Cd", "pink"))
+#trait = "Temperature"
+#module = "black"
+#weight = as.data.frame(datTraits[,trait])
+#names(weight) = trait
 
-## Significant modules
-# **red = Cd ~14, p=4.7e-08
-# *pink = Cd ~4, p=0.03
-# green = Cd ~3, p=0.42
-# *lightcyan = Ni ~8 genes, p=0.066
+### Significant modules
+## **red = Cd ~14, p=4.7e-08
+## *pink = Cd ~4, p=0.03
+## green = Cd ~3, p=0.42
+## *lightcyan = Ni ~8 genes, p=0.066
 
-# names (colors) of the modules
-modNames = substring(names(MEs), 3)
-geneModuleMembership = as.data.frame(cor(datExpr, MEs, use = "p"))
-MMPvalue = as.data.frame(corPvalueStudent(as.matrix(geneModuleMembership), nSamples))
-names(geneModuleMembership) = paste("MM", modNames, sep="")
-names(MMPvalue) = paste("p.MM", modNames, sep="")
-geneTraitSignificance = as.data.frame(cor(datExpr, weight, use = "p"))
-GSPvalue = as.data.frame(corPvalueStudent(as.matrix(geneTraitSignificance), nSamples))
-names(geneTraitSignificance) = paste("GS.", names(weight), sep="")
-names(GSPvalue) = paste("p.GS.", names(weight), sep="")
+## names (colors) of the modules
+#modNames = substring(names(MEs), 3)
+#geneModuleMembership = as.data.frame(cor(datExpr, MEs, use = "p"))
+#MMPvalue = as.data.frame(corPvalueStudent(as.matrix(geneModuleMembership), nSamples))
+#names(geneModuleMembership) = paste("MM", modNames, sep="")
+#names(MMPvalue) = paste("p.MM", modNames, sep="")
+#geneTraitSignificance = as.data.frame(cor(datExpr, weight, use = "p"))
+#GSPvalue = as.data.frame(corPvalueStudent(as.matrix(geneTraitSignificance), nSamples))
+#names(geneTraitSignificance) = paste("GS.", names(weight), sep="")
+#names(GSPvalue) = paste("p.GS.", names(weight), sep="")
 
-## Intramodular analysis
-column = match(module, modNames)
-moduleGenes = moduleColors==module
-sizeGrWindow(10.25, 5.75)
-verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]),
-     abs(geneTraitSignificance[moduleGenes, 1]),
-     xlab = paste("Module Membership in", module, "module"),
-     ylab = paste("Gene significance for", names(weight)),
-     main = paste("Module membership vs. gene significance\n"),
-     pch=21, cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2, col = "black", bg=module)
+### Intramodular analysis
+#column = match(module, modNames)
+#moduleGenes = moduleColors==module
+#sizeGrWindow(10.25, 5.75)
+#verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]),
+#     abs(geneTraitSignificance[moduleGenes, 1]),
+#     xlab = paste("Module Membership in", module, "module"),
+#     ylab = paste("Gene significance for", names(weight)),
+#     main = paste("Module membership vs. gene significance\n"),
+#     pch=21, cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2, col = "black", bg=module)
 
 
 
