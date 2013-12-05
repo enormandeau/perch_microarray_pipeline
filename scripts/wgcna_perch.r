@@ -3,6 +3,8 @@ rm(list=ls())
 library(WGCNA)
 options(stringsAsFactors = FALSE)
 
+
+
 # Global variables
 expression.file = "OUTPUT_lowess_data_for_wgcna.csv"
 design.file = "files_to_fill/design.txt"
