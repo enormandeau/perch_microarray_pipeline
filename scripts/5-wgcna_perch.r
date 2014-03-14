@@ -3,14 +3,15 @@ rm(list=ls())
 library(WGCNA)
 options(stringsAsFactors = FALSE)
 
-
-
 # Global variables
-expression.file = "OUTPUT_lowess_data_for_wgcna.csv"
+expression.file = "OUTPUT_lowess_data_for_wgcna_averaged.txt"
 design.file = "files_to_fill/design.txt"
 prepared.data = "OUTPUT_wgcna_prepared_data.RData"
 wgcna.modules = "OUTPUT_wgcna_modules.RData"
 tom.basename = "OUTPUT_wgcna_tom"
+
+sample.names = "SampleName"
+traits = c("chromium", "nickel", "copper", "arsenic", "selenium", "silver107", "silver109", "cadmium", "zinc")
 
 # Reading data
 # tutorial file 1
@@ -40,17 +41,17 @@ gsg$allOK
 #}
 
 # Plot the sample tree: Open a graphic output window of size 12 by 9 inches
-jpeg("sample_clustering_and_outliers.jpg", width=1200, height=1000, quality=100)
+jpeg("sample_clustering_and_outliers.jpg", width=800, height=600, quality=100)
     ## Cluster samples to detect outliers
     sampleTree = flashClust(dist(data.expression.temp), method = "average")
     par(cex = 0.6)
     par(mar = c(0,4,2,0))
     plot(sampleTree, main="Sample clustering", sub="", xlab="", cex.lab=1.5, cex.axis=1.5, cex.main=2)
 
-    # Choose height threshold to remove potential outliers
-    # Plot a line to show the cut
-    cut.threshold = 25
-    abline(h = cut.threshold, col = "red")
+# Choose height threshold to remove potential outliers
+# Plot a line to show the cut
+cut.threshold = 12
+abline(h = cut.threshold, col = "red")
 dev.off()
 
 # Determine cluster under the line
@@ -69,7 +70,7 @@ nSamples
 traitData = read.csv(design.file, sep="\t")
 
 # WARNING: Change this for your project
-traitData = traitData[,c("Fish_ID", "Temperature", "Ni", "Cd")]
+traitData = traitData[,c(sample.names, traits)]
 
 # Eliminate data from removed samples
 allTraits = traitData[keepSamples, ]
@@ -81,7 +82,7 @@ perchSamples = rownames(datExpr)
 traitRows = match(perchSamples, allTraits$Ind_name)
 datTraits = allTraits
 rownames(datTraits) = allTraits$Ind_name
-datTraits = datTraits[, c("Temperature", "Ni", "Cd")]
+datTraits = datTraits[, traits]
 collectGarbage()
 
 ## Visualize how traits to the sample dendogram
@@ -144,15 +145,25 @@ text(sft$fitIndices[,1], sft$fitIndices[,5], labels=powers, cex=cex1,col="red")
 
 
 # CAUTION Be sure to explore the parameters of blockwiseModules! There are more!
-power = 7
+power = 6
 minSize = 15
-reasignThreshold = 0.2
+reasignThreshold = 0.1
 deepSplit = 2
 mergeHeight= 0.10
 net = blockwiseModules(datExpr, power = power, minModuleSize = minSize, reassignThreshold = reasignThreshold, deepSplit=deepSplit, mergeCutHeight = mergeHeight, numericLabels = TRUE, pamRespectsDendro = FALSE, saveTOMs = TRUE, saveTOMFileBase = tom.basename, verbose = 2)
 
 ## Plot the result
 # open a graphics window
+moduleLabels = net$colors
+moduleColors = labels2colors(net$colors)
+MEs = net$MEs
+table(net$colors)
+
+geneTree = net$dendrograms[[1]]
+save(MEs, moduleLabels, moduleColors, geneTree, file = wgcna.modules)
+
+
+
 #sizeGrWindow(10.25, 5.75)
 # Convert labels to colors for plotting
 mergedColors = labels2colors(net$colors)
@@ -192,7 +203,7 @@ moduleTraitCor = cor(MEs, datTraits, use = "p")
 moduleTraitPvalue = corPvalueStudent(moduleTraitCor, nSamples)
 
 # Plot modules
-jpeg("module-trait_relationships.jpg", height=800, width=400, quality=100)
+jpeg("module-trait_relationships.jpg", height=800, width=800, quality=100)
     #sizeGrWindow(5.178, 11.79)
     # Will display correlations and their p-values
     textMatrix = paste(signif(moduleTraitCor, 2), "\n(", signif(moduleTraitPvalue, 1), ")", sep = "")
@@ -205,7 +216,7 @@ dev.off()
 
 
 pvalues_all_traits = apply(moduleTraitPvalue, 1, min)
-sign_modules = names(pvalues_all_traits)[pvalues_all_traits <= 0.05]
+sign_modules = names(pvalues_all_traits)[pvalues_all_traits <= 0.1]
 num_sign_modules = length(sign_modules)
 
 sign_modules
@@ -222,8 +233,10 @@ cat("  Number of significant modules", num_sign_modules, "\n")
 pvalues = data.frame(moduleTraitPvalue)
 genes = data.frame(1:1008)
 
-for (trait in c("Temperature", "Ni", "Cd")){
-    sign_modules = row.names(pvalues)[pvalues[,trait] <= 0.05]
+for (trait in traits[! traits %in% c("copper", "arsenic")]){
+    sign_modules = row.names(pvalues)[pvalues[,trait] <= 0.1]
+    cat("Trait: ", trait, "\n  Significant: ", sign_modules, "\n", sep="")
+    #if (T) {next}
     for (m in sign_modules){
         module = gsub("ME", "", m)
         cat(module, " module for trait ", trait, "\n", sep="")
@@ -247,9 +260,16 @@ for (trait in c("Temperature", "Ni", "Cd")){
         MG = data.frame(moduleGenes)
         names(MG) = module
         genes = data.frame(genes, MG)
-        jpeg(paste(trait, "_", module, "gene_significance.jpg", sep=""), width=800, height=800, quality=100)
+        jpeg(paste(trait, "_", module, "gene_significance.jpg", sep=""),
+             width=800, height=800, quality=100)
         par(mfrow = c(1,1))
-        verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]), abs(geneTraitSignificance[moduleGenes, 1]), xlab = paste("Module Membership in", module, "module"), ylab = paste("Gene significance for ", trait, sep=""), main = paste("Module membership vs. gene significance\n"), pch=21, cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2, col = "black", bg=module)
+        verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]),
+                           abs(geneTraitSignificance[moduleGenes, 1]),
+                           xlab = paste("Module Membership in", module, "module"),
+                           ylab = paste("Gene significance for ", trait, sep=""),
+                           main = paste("Module membership vs. gene significance\n"),
+                           pch=21, cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2,
+                           col = "black", bg=module)
         dev.off()
         
         MM = data.frame(abs(geneModuleMembership[, column]))
@@ -260,12 +280,13 @@ for (trait in c("Temperature", "Ni", "Cd")){
         jpeg(paste(trait, "_", module, "eigengene.jpg", sep=""), width=800, height=800)
         par(mfrow=c(2,1), mar=c(0.3, 5.5, 5, 2))
         which.module=module
-        plotMat(t(scale(datExpr[, mergedColors==which.module ]) ),nrgcols=30,rlabels=T, clabels=T,rcols=which.module,main=which.module,cex.main=2)
+        plotMat(t(scale(datExpr[, mergedColors==which.module ]) ),nrgcols=30,rlabels=T,
+                clabels=T,rcols=which.module,main=which.module,cex.main=2)
         par(mar=c(5, 4.2, 0, 0.7))
-        barplot(MEs0[,paste("ME",which.module,sep="")], col=which.module, main="", cex.main=2,ylab="eigengene expression",xlab="array sample")
+        barplot(MEs0[,paste("ME",which.module,sep="")], col=which.module, main="",
+                cex.main=2,ylab="eigengene expression",xlab="array sample")
         dev.off()
     }
-    
     
     modules.temp = gsub("ME", "MM", sign_modules)
     modules_trait = gsub("MM", paste(trait, "_MM", sep=""), modules.temp)
@@ -277,9 +298,8 @@ for (trait in c("Temperature", "Ni", "Cd")){
     genes = data.frame(genes, geneTraitSignificance, abs(geneTraitSignificance))
 }
 
-
-
-names(genes) = gsub(".1", "_abs", names(genes))
+names(genes)[substr(names(genes), 1, 3) == "GS."] =
+    gsub(".1", "_abs", names(genes))[substr(names(genes), 1, 3) == "GS."]
 names(genes)[1] = "Gene_number"
 head(genes, 2)
 
@@ -290,72 +310,75 @@ write.table(genes, "OUTPUT_gene_significance.csv", row.names=F, quote=F, sep="\t
 
 
 
-gs_Temperature = as.numeric(cor(allTraits[,2], datExpr, use="p"))
-gs_Temperature = abs(gs_Temperature)
-# Next module significance is defined as average gene significance with kruskal-wallis test.
-ModuleSignificance = tapply(gs_Temperature, mergedColors, mean, na.rm=T)
-#cairo_pdf(filename = "(14)gene_significance_bl.pdf")
-jpeg("Temperature_module_significance.jpg", width=800, height=800)
-plotModuleSignificance(gs_Temperature,mergedColors,ylim=c(0,0.8), main = "Gene significance accross module (bl)", las=3)
-dev.off()
+
+
+#gs_Ni = as.numeric(cor(allTraits[,2], datExpr, use="p"))
+#gs_Ni = abs(gs_Ni)
+## Next module significance is defined as average gene significance with kruskal-wallis test.
+#ModuleSignificance = tapply(gs_Ni, mergedColors, mean, na.rm=T)
+##cairo_pdf(filename = "(14)gene_significance_bl.pdf")
+#jpeg("Ni_module_significance.jpg", width=800, height=800)
+#plotModuleSignificance(gs_Ni,mergedColors,ylim=c(0,0.8), main = "Gene significance accross module (bl)", las=3)
+#dev.off()
+
+
+#gs_Cd = as.numeric(cor(allTraits[,3], datExpr, use="p"))
+#gs_Cd = abs(gs_Cd)
+## Next module significance is defined as average gene significance with kruskal-wallis test.
+#ModuleSignificance = tapply(gs_Cd, mergedColors, mean, na.rm=T)
+##cairo_pdf(filename = "(14)gene_significance_bl.pdf")
+#jpeg("Cd_module_significance.jpg", width=800, height=800)
+#plotModuleSignificance(gs_Cd,mergedColors,ylim=c(0,0.8), main = "Gene significance accross module (bl)", las=3)
+#dev.off()
+
+
+#gs_Prod = as.numeric(cor(allTraits[,3], datExpr, use="p"))
+#gs_Prod = abs(gs_Prod)
+## Next module significance is defined as average gene significance with kruskal-wallis test.
+#ModuleSignificance = tapply(gs_Prod, mergedColors, mean, na.rm=T)
+##cairo_pdf(filename = "(14)gene_significance_bl.pdf")
+#jpeg("Prod_module_significance.jpg", width=800, height=800)
+#plotModuleSignificance(gs_Prod,mergedColors,ylim=c(0,0.8), main = "Gene significance accross module (bl)", las=3)
+#dev.off()
 
 
 
 
 
 
-gs_Ni = as.numeric(cor(allTraits[,3], datExpr, use="p"))
-gs_Ni = abs(gs_Ni)
-# Next module significance is defined as average gene significance with kruskal-wallis test.
-ModuleSignificance = tapply(gs_Ni, mergedColors, mean, na.rm=T)
-#cairo_pdf(filename = "(14)gene_significance_bl.pdf")
-jpeg("Ni_module_significance.jpg", width=800, height=800)
-plotModuleSignificance(gs_Ni,mergedColors,ylim=c(0,0.8), main = "Gene significance accross module (bl)", las=3)
-dev.off()
+## Calculate connectivity
+#GeneConnectivity=softConnectivity(datExpr, power=power, verbose = 3)
+#GeneConnectivity = GeneConnectivity/max(GeneConnectivity)
+##sort(GeneConnectivity)
+
+## Calculate gene significance for phenotype
+#Ni_sign = standardScreeningNumericTrait(datExpr, datTraits[,1], alternative = "two.sided")
+#Cd_sign = standardScreeningNumericTrait(datExpr, datTraits[,2], alternative = "two.sided")
+#Prod_sign = standardScreeningNumericTrait(datExpr, datTraits[,4], alternative = "two.sided")
 
 
+#gene_choice = data.frame(GeneConnectivity, Ni_sign$pvalueStudent, Cd_sign$pvalueStudent)
 
-
-gs_Cd = as.numeric(cor(allTraits[,4], datExpr, use="p"))
-gs_Cd = abs(gs_Cd)
-# Next module significance is defined as average gene significance with kruskal-wallis test.
-ModuleSignificance = tapply(gs_Cd, mergedColors, mean, na.rm=T)
-#cairo_pdf(filename = "(14)gene_significance_bl.pdf")
-jpeg("Cd_module_significance.jpg", width=800, height=800)
-plotModuleSignificance(gs_Cd,mergedColors,ylim=c(0,0.8), main = "Gene significance accross module (bl)", las=3)
-dev.off()
-
+#plot(gene_choice$GeneConnectivity, gene_choice$Ni_sign.pvalueStudent)
+#plot(gene_choice$GeneConnectivity, gene_choice$Cd_sign.pvalueStudent)
+#plot(gene_choice$GeneConnectivity, gene_choice$Prod_sign.pvalueStudent)
 
 
 
 
 
-# Calculate connectivity
-GeneConnectivity=softConnectivity(datExpr, power=power, verbose = 3)
-GeneConnectivity = GeneConnectivity/max(GeneConnectivity)
-#sort(GeneConnectivity)
+## Gene-trait association
+# Define variable weight containing the weight column of datTrait
+# traits_modules = list(c("Ni", "lightcyan"), c("Cd", "red"), c("Cd", "green"), c("Cd", "pink"))
 
-# Calculate gene significance for phenotype
-Temperature_sign = standardScreeningNumericTrait(datExpr, datTraits[,1], alternative = "two.sided")
-Ni_sign = standardScreeningNumericTrait(datExpr, datTraits[,2], alternative = "two.sided")
-Cd_sign = standardScreeningNumericTrait(datExpr, datTraits[,3], alternative = "two.sided")
+# Modules
+# GS=0.4, MM=0.6
+# Ni lightyellow 8 grey 0
+# Cd black 12 cyan 0 grey60 4
+# NiCdProd lightyellow 6 grey60 1
 
-
-gene_choice = data.frame(GeneConnectivity, Temperature_sign$pvalueStudent, Ni_sign$pvalueStudent, Cd_sign$pvalueStudent)
-
-plot(gene_choice$GeneConnectivity, gene_choice$Temperature_sign.pvalueStudent)
-plot(gene_choice$GeneConnectivity, gene_choice$Ni_sign.pvalueStudent)
-plot(gene_choice$GeneConnectivity, gene_choice$Cd_sign.pvalueStudent)
-
-
-
-
-
-### Gene-trait association
-## Define variable weight containing the weight column of datTrait
-## traits_modules = list(c("Ni", "lightcyan"), c("Cd", "red"), c("Cd", "green"), c("Cd", "pink"))
-#trait = "Temperature"
-#module = "black"
+#trait = "NiCdProd"
+#module = "lightyellow"
 #weight = as.data.frame(datTraits[,trait])
 #names(weight) = trait
 
