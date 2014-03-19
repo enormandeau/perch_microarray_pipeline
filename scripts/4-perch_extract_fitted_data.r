@@ -9,7 +9,6 @@ design.file = "files_to_fill/design.txt"
 lowess.data = lowess.data
 anova.model = anova.mix1
 output.file = "OUTPUT_fitted_data.txt"
-results = test.FDR
 
 # Import design file
 design = read.table(design.file, header = T)
@@ -26,7 +25,6 @@ for(i in 1:nb.arrays)
     data.fitted[ , design$Array == array.levels[i]] = data.fitted[ , design$Array == array.levels[i]] - anova.model$Array[,i]
 }
 
-
 # Remove dye effect
 dye.levels = levels(as.factor(design$Dye))
 nb.dyes = length(dye.levels)
@@ -37,10 +35,6 @@ for(i in 1:nb.dyes)
 }
 
 # Remove other technical effects in the same way
-
-
-#data.fitted = scale(data.fitted)
-#boxplot(data.fitted)
 
 write.table(data.fitted, output.file, sep="\t", col.names=F, row.names=F)
 
