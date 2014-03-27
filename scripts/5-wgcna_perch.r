@@ -215,6 +215,15 @@ jpeg("module-trait_relationships.jpg", height=800, width=800, quality=100)
     labeledHeatmap(Matrix = moduleTraitCor, xLabels = names(datTraits), yLabels = names(MEs), ySymbols = names(MEs), colorLabels = FALSE, colors = greenWhiteRed(50), textMatrix = textMatrix, setStdMargins = FALSE, cex.text = 1, zlim = c(-1,1), main = paste("Module-trait relationships"))
 dev.off()
 
+pdf("module-trait_relationships.pdf", height=16, width=16)
+    #sizeGrWindow(5.178, 11.79)
+    # Will display correlations and their p-values
+    textMatrix = paste(signif(moduleTraitCor, 2), "\n(", signif(moduleTraitPvalue, 1), ")", sep = "")
+    dim(textMatrix) = dim(moduleTraitCor)
+    par(mar = c(6, 8.5, 3, 3))
+    # Display the correlation values within a heatmap plot
+    labeledHeatmap(Matrix = moduleTraitCor, xLabels = names(datTraits), yLabels = names(MEs), ySymbols = names(MEs), colorLabels = FALSE, colors = greenWhiteRed(50), textMatrix = textMatrix, setStdMargins = FALSE, cex.text = 1, zlim = c(-1,1), main = paste("Module-trait relationships"))
+dev.off()
 
 
 pvalues_all_traits = apply(moduleTraitPvalue, 1, min)
@@ -225,9 +234,6 @@ sign_modules
 pvalues_all_traits
 cat("\n  Number of modules", length(MEs), "\n")
 cat("  Number of significant modules", num_sign_modules, "\n")
-
-
-
 
 
 #sign_modules=c("green")
