@@ -95,10 +95,12 @@ traitColors = numbers2colors(datTraits, signed = FALSE)
 sizeGrWindow(10.25, 5.75)
 plotDendroAndColors(sampleTree2, traitColors, groupLabels = names(datTraits), main = "Sample dendrogram and trait heatmap")
 
+jpeg("sample_dendrogram_and_trait_heatmap.jpg", width=1000, height=600)
+plotDendroAndColors(sampleTree2, traitColors, groupLabels = names(datTraits), main = "Sample dendrogram and trait heatmap")
+dev.off()
+
 # Saving the data
 save(datExpr, datTraits, file = prepared.data)
-
-
 
 ### START OF AUTOMATIC NETWORK CONSTRUCTION ###
 # tutorial file 2
