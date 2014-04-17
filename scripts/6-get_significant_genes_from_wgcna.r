@@ -16,11 +16,22 @@ for (i in wanted) {
     good.genes = data[data[,col.name] == "TRUE" &
                       data[,col.mm] >= 0.6 &
                       data[,col.gs] >= 0.2, 1]
+    gs.value = data[,col.gs]
     flag = rep(0, 1008)
     flag[good.genes] = 1
-    results = data.frame(results, flag)
-    names(results)[length(names(results))] = paste0(names(data)[col.name], "_", gsub("_abs", "", gsub("GS.", "", names(data)[col.gs])))
+    results = data.frame(results, flag, gs.value)
+    names(results)[length(names(results)) - 1] =
+        paste0(names(data)[col.name],
+        "_",
+        gsub("_abs", "", gsub("GS.", "", names(data)[col.gs])))
+
+    names(results)[length(names(results))] =
+        paste0(names(data)[col.name],
+        "_",
+        gsub("_abs", "", gsub("GS.", "", names(data)[col.gs])),
+        "_gs")
+
 }
 
-write.table(results, "OUTPUT_gene_significance_flags.csv", quote=F, row.names=F, sep="\t")
+write.table(results, "OUTPUT_gene_significance_flags_test.csv", quote=F, row.names=F, sep="\t")
 
