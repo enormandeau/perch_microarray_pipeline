@@ -33,5 +33,5 @@ for (i in wanted) {
 
 }
 
-write.table(results, "OUTPUT_gene_significance_flags_test.csv", quote=F, row.names=F, sep="\t")
+write.table(results, "OUTPUT_gene_significance_flags.csv", quote=F, row.names=F, sep="\t")
 
